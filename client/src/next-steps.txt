@@ -1,0 +1,3 @@
+Frontend stores proposals in localstorage
+Display them in Frontend
+Have "vote" buttons

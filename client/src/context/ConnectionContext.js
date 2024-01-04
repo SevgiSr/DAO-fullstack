@@ -44,7 +44,7 @@ export const ConnectionProvider = ({ children }) => {
   const sendProposal = async () => {
     console.log("proposing");
     try {
-      await propose([101], "store", "changes value to 77");
+      await propose([1], "store", "changes value to 77");
       console.log("proposed!");
     } catch (error) {
       console.log(error);

@@ -36,35 +36,45 @@ export async function propose(args, functionToCall, proposalDescription) {
 
     console.log(`Proposed with proposal ID:\n  ${proposalId}`);
 
-    const proposalState = await governor.state(proposalId);
+    /*     const proposalState = await governor.state(proposalId);
     const proposalSnapShot = await governor.proposalSnapshot(proposalId);
     const proposalDeadline = await governor.proposalDeadline(proposalId);
-
-    console.log(`Current Proposal State: ${proposalState}`);
-
-    console.log(`Current Proposal Snapshot: ${proposalSnapShot}`);
-
-    console.log(`Current Proposal Deadline: ${proposalDeadline}`);
+; */
 
     const network = await provider.getNetwork();
     console.log(network);
 
     const chainId = network.chainId?.toString();
 
-    let proposalArray = localStorage.getItem(chainId);
+    const proposalObj = {
+      id: proposalId.toString(),
+      data: {
+        targets: [await box.getAddress()],
+        values: [0],
+        calldatas: [encodedFunctionCall],
+        descriptionHash: ethers.keccak256(
+          ethers.toUtf8Bytes(proposalDescription)
+        ),
+      },
+    };
 
-    if (!proposalArray) {
-      // If there is no existing array, initialize an empty array and save it
-      proposalArray = [];
-      localStorage.setItem(chainId, JSON.stringify(proposalArray));
-    } else {
-      // If there is an existing array, parse it from the stored string
-      proposalArray = JSON.parse(proposalArray);
-    }
-
-    proposalArray.push(proposalId.toString());
-    localStorage.setItem(chainId, JSON.stringify(proposalArray));
+    await storeProposal(chainId, proposalObj);
   } catch (error) {
     console.error("Error submitting proposal:", error);
   }
+}
+
+async function storeProposal(chainId, proposalObj) {
+  let proposalArray = localStorage.getItem(chainId);
+
+  if (!proposalArray) {
+    // If there is no existing array, initialize an empty array and save it
+    proposalArray = [];
+  } else {
+    // If there is an existing array, parse it from the stored string
+    proposalArray = JSON.parse(proposalArray);
+  }
+
+  proposalArray.push(proposalObj);
+  localStorage.setItem(chainId, JSON.stringify(proposalArray));
 }
