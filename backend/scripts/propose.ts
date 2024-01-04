@@ -43,9 +43,7 @@ export async function propose(
 
   // save proposal id so that next scripts can find and vote
   const proposeReceipt = await proposeTx.wait(1);
-  const proposalId = governor.interface.parseLog(
-    proposeReceipt.logs[0].args.proposeId
-  );
+  const proposalId = await proposeReceipt!.logs[0].args.proposalId;
   console.log(`Proposed with proposal ID:\n  ${proposalId}`);
 
   const proposalState = await governor.getFunction("state")(proposalId);
@@ -55,8 +53,15 @@ export async function propose(
   const proposalDeadline = await governor.getFunction("proposalDeadline")(
     proposalId
   );
+
+  const proposalObj = {
+    targets: [await box.getAddress()],
+    values: [0],
+    calldatas: [encodedFunctionCall],
+    descriptionHash: ethers.keccak256(ethers.toUtf8Bytes(proposalDescription)),
+  };
   // save the proposalId
-  storeProposalId(proposalId);
+  storeProposalId(proposalId, proposalObj);
 
   // the Proposal State is an enum data type, defined in the IGovernor contract.
   // 0:Pending, 1:Active, 2:Canceled, 3:Defeated, 4:Succeeded, 5:Queued, 6:Expired, 7:Executed
@@ -67,7 +72,7 @@ export async function propose(
   console.log(`Current Proposal Deadline: ${proposalDeadline}`);
 }
 
-function storeProposalId(proposalId: any) {
+function storeProposalId(proposalId: any, proposalObj: any) {
   const chainId = network.config.chainId!.toString();
   let proposals: any;
 
@@ -75,9 +80,13 @@ function storeProposalId(proposalId: any) {
     proposals = JSON.parse(fs.readFileSync(proposalsFile, "utf8"));
   } else {
     proposals = {};
-    proposals[chainId] = [];
   }
-  proposals[chainId].push(proposalId.toString());
+  if (!proposals[chainId]) proposals[chainId] = [];
+  // map proposal id's to proposal data in chainId
+  proposals[chainId].push({
+    id: proposalId.toString(),
+    data: proposalObj,
+  });
   fs.writeFileSync(proposalsFile, JSON.stringify(proposals), "utf8");
 }
 
