@@ -51,10 +51,9 @@ export async function propose(args, functionToCall, proposalDescription) {
       data: {
         targets: [await box.getAddress()],
         values: [0],
-        calldatas: [encodedFunctionCall],
-        descriptionHash: ethers.keccak256(
-          ethers.toUtf8Bytes(proposalDescription)
-        ),
+        functionToCall,
+        args,
+        description: proposalDescription,
       },
     };
 

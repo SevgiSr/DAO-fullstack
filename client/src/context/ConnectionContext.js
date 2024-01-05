@@ -3,6 +3,7 @@ import { ethers } from "ethers";
 import { propose } from "../utils/helpers/propose";
 import getContract from "../utils/helpers/getContract";
 import boxContract from "../utils/contracts/Box.json";
+import { vote } from "../utils/helpers/vote.js";
 
 export const ConnectionContext = React.createContext();
 
@@ -44,8 +45,18 @@ export const ConnectionProvider = ({ children }) => {
   const sendProposal = async () => {
     console.log("proposing");
     try {
-      await propose([1], "store", "changes value to 77");
+      await propose([2], "store", "changes value to 77");
       console.log("proposed!");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const voteProposal = async (proposalId, voteWay, reason) => {
+    console.log("voting...");
+    try {
+      await vote(proposalId, voteWay, reason);
+      console.log("voted!");
     } catch (error) {
       console.log(error);
     }
@@ -88,7 +99,13 @@ export const ConnectionProvider = ({ children }) => {
 
   return (
     <ConnectionContext.Provider
-      value={{ connectWallet, currentAccount, sendProposal, readValue }}
+      value={{
+        connectWallet,
+        currentAccount,
+        sendProposal,
+        voteProposal,
+        readValue,
+      }}
     >
       {children}
     </ConnectionContext.Provider>
