@@ -1,3 +1,1 @@
-Frontend stores proposals in localstorage
-Display them in Frontend
-Have "vote" buttons
+I copied new abi's to frontend cotracts folder

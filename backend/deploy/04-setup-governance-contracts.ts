@@ -39,12 +39,17 @@ const setupContracts: DeployFunction = async function (
   await executorTx.wait(1);
 
   // revoke your admin role over time lock
-  const revokeTx = await timeLock.getFunction("revokeRole")(
+  const hasAdminRole = await timeLock.getFunction("hasRole")(
     adminRole,
     deployer
   );
-  await revokeTx.wait(1);
-
+  if (hasAdminRole) {
+    const revokeTx = await timeLock.getFunction("revokeRole")(
+      adminRole,
+      deployer
+    );
+    await revokeTx.wait(1);
+  }
   // Guess what? Now, anything the timelock wants to do has to go through the governance process!
 };
 

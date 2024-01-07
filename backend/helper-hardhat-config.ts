@@ -2,14 +2,14 @@ export const developmentChains = ["hardhat", "localhost"];
 export const proposalsFile = "proposals.json";
 
 //args for timelock
-export const MIN_DELAY = 3600; // 1 hour - minimum time delay (in seconds) that must pass after a proposal has been approved
+export const MIN_DELAY = 60; // 1 hour - minimum time delay (in seconds) that must pass after a proposal has been approved
 //(or passed the voting process) before it can be executed
 
 // args for governor contract
 export const QUORUM_PERCENTAGE = 4; // Need 4% of voters to pass
 // export const VOTING_PERIOD = 45818 // 1 week - how long the vote lasts. This is pretty long even for local tests
 export const VOTING_PERIOD = 5; // blocks
-export const VOTING_DELAY = 1; // 1 Block - How many blocks till voting period starts
+export const VOTING_DELAY = 3; // 1 Block - How many blocks till voting period starts
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
