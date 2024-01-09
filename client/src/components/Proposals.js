@@ -6,8 +6,6 @@ import { ConnectionContext } from "../context/ConnectionContext";
 function Proposals() {
   const proposals = JSON.parse(localStorage.getItem("11155111"));
 
-  console.log(proposals);
-
   return (
     <Styled>
       {proposals?.map((p) => {
@@ -17,6 +15,9 @@ function Proposals() {
   );
 }
 
-const Styled = styled.div``;
+const Styled = styled.div`
+  display: flex;
+  flex-direction: column-reverse;
+`;
 
 export default Proposals;

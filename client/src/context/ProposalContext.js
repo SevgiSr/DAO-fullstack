@@ -1,17 +1,23 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { propose } from "../utils/helpers/propose";
 import getContract from "../utils/helpers/getContract";
 import boxContract from "../utils/contracts/Box.json";
 import { vote } from "../utils/helpers/vote.js";
 import GovernorContract from "../utils/contracts/GovernorContract.json";
 import { getProposalData } from "../utils/helpers/getProposalData.js";
+
 export const ProposalContext = React.createContext();
 
 export const ProposalProvider = ({ children }) => {
-  const sendProposal = async () => {
+  const sendProposal = async (value, funcToCall, desc) => {
     console.log("proposing");
     try {
-      await propose([10], "store", "changes value to 77");
+      Number(value);
+    } catch (error) {
+      console.log("Input is not a number");
+    }
+    try {
+      await propose([value], funcToCall, desc);
       console.log("proposed!");
     } catch (error) {
       console.log(error);
@@ -43,7 +49,7 @@ export const ProposalProvider = ({ children }) => {
       const governor = await getContract(GovernorContract);
 
       const { targets, values, calldatas, descriptionHash } =
-        getProposalData(proposalId);
+        await getProposalData(proposalId);
 
       console.log("Queueing...");
       const queueTx = await governor.queue(
@@ -53,6 +59,7 @@ export const ProposalProvider = ({ children }) => {
         descriptionHash
       );
       await queueTx.wait(1);
+      console.log("Queued!");
     } catch (error) {
       console.log(error);
     }
@@ -62,7 +69,7 @@ export const ProposalProvider = ({ children }) => {
     try {
       const governor = await getContract(GovernorContract);
       const { targets, values, calldatas, descriptionHash } =
-        getProposalData(proposalId);
+        await getProposalData(proposalId);
 
       console.log("Executing...");
       // this will fail on a testnet because you need to wait for the MIN_DELAY!
@@ -73,6 +80,7 @@ export const ProposalProvider = ({ children }) => {
         descriptionHash
       );
       await executeTx.wait(1);
+      console.log("Executed!");
     } catch (error) {
       console.log(error);
     }
@@ -86,7 +94,8 @@ export const ProposalProvider = ({ children }) => {
       // Call the view function. No need for a provider or transaction here.
       const value = await box.retrieve();
 
-      console.log("Retrieved value:", value);
+      console.log(value);
+      return Number(value);
     } catch (error) {
       console.error("Error retrieving value:", error);
     }

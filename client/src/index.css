@@ -35,6 +35,14 @@ html {
 
   --main-text: #8e53e0;
 
+
+  --red-light: #f8d7da;
+  --red-dark: #842029;
+  --green-light: #d1e7dd;
+  --green-dark: #0f5132;
+
+
+
   --icons: #61646b;
   --border: #3d4047;
 }
@@ -64,6 +72,7 @@ html {
   line-height: 18px;
   border-radius: 6px;
   font-weight: 600;
+  width: fit-content;
   vertical-align: middle;
   cursor: pointer;
   text-decoration: none;
@@ -74,4 +83,46 @@ html {
 
 .btn:hover {
   background-color: var(--background2);
+}
+
+.btn-main {
+  background-color: #7f47cc;
+  color: #210942;
+}
+
+.btn-main:hover {
+  background-color: #997bc4;
+}
+
+.btn-red {
+  color: var(--red-light);
+  background-color: var(--red-dark);
+}
+
+.btn-green {
+  color: var(--green-light);
+  background-color: var(--green-dark);
+}
+
+
+
+.btn-grey {
+  color: #222;
+  background-color: #eee;
+}
+
+.btn-grey:hover {
+  color: #222;
+  background-color: #eeeeee5d;
+}
+
+.input {
+  background-color: var(--background2);
+  border: 1px solid var(--border);
+  resize: none;
+  padding: 0.7em 0.5em;
+  color: var(--font1);
+  font-size: 17px;
+  border-radius: 10px;
+
 }

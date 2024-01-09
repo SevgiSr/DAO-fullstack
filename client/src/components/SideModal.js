@@ -55,8 +55,8 @@ const Styled = styled.div`
     top: 0;
     bottom: 0;
     width: 500px;
+    max-width: 500px;
     background-color: var(--background2);
-    padding: 5em 2em;
     z-index: 1999;
 
     .close-btn {
@@ -70,6 +70,7 @@ const Styled = styled.div`
     }
 
     .content {
+      padding: 5em 2em;
     }
   }
 `;

@@ -20,12 +20,14 @@ export async function getProposalData(proposalId) {
       args
     );
 
+    const calldatas = [encodedFunctionCall];
+
     const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
 
     return {
       targets,
       values,
-      calldatas: [encodedFunctionCall],
+      calldatas,
       descriptionHash,
     };
   } catch (error) {
