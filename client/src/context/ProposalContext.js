@@ -18,6 +18,7 @@ export const ProposalProvider = ({ children }) => {
     }
     try {
       await propose([value], funcToCall, desc);
+      window.dispatchEvent(new CustomEvent("localStorageChange"));
       console.log("proposed!");
     } catch (error) {
       console.log(error);

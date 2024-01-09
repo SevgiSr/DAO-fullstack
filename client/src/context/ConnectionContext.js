@@ -5,7 +5,7 @@ export const ConnectionContext = React.createContext();
 const { ethereum } = window;
 
 export const ConnectionProvider = ({ children }) => {
-  const [currentAccount, setCurrentAccount] = useState("");
+  const [currentAccount, setCurrentAccount] = useState(null);
 
   const checkIfWalletIsConnect = async () => {
     if (!ethereum) return alert("Please install MetaMask.");
