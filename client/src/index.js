@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { ConnectionProvider } from "./context/ConnectionContext";
+import { ProposalProvider } from "./context/ProposalContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <ConnectionProvider>
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <ProposalProvider>
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    </ProposalProvider>
   </ConnectionProvider>
 );
 
