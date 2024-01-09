@@ -1,9 +1,5 @@
-import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { ConnectionContext } from "../context/ConnectionContext";
 import { Navbar, NewProposal, Proposals } from "../components";
-import SideModal from "../components/SideModal";
-import { ProposalContext } from "../context/ProposalContext";
 
 function Home() {
   return (
