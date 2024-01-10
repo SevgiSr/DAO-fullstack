@@ -1,29 +1,25 @@
-import boxContract from "../contracts/Box.json";
 import getContract from "./getContract";
 import { ethers } from "ethers";
 import getEventLogs from "./getEventLogs";
 
 export async function getProposalData(proposalId) {
   try {
-    const box = await getContract(boxContract);
+    const events = await getEventLogs();
 
-    const proposalObj = JSON.parse(localStorage.getItem("11155111")).find(
-      (p) => '0x'+BigInt(p.id).toString(16) === proposalId
+    const proposalObj = events.find(
+      (p) => p.proposalId === proposalId
     );
 
     console.log(proposalObj);
 
     // Retrieve the proposal details
-    const proposalDetails = proposalObj.data;
-    const { targets, values, functionToCall, args, description } =
-      proposalDetails;
+    let { targets, values, calldatas, description } =
+      proposalObj;
 
-    const encodedFunctionCall = box.interface.encodeFunctionData(
-      functionToCall,
-      args
-    );
-
-    const calldatas = [encodedFunctionCall];
+    targets = [...targets];
+    values = [...values];
+    calldatas = [...calldatas];
+    console.log(targets, values, calldatas, description);
 
     const descriptionHash = ethers.keccak256(ethers.toUtf8Bytes(description));
 
