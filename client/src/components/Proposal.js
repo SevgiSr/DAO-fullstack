@@ -74,11 +74,11 @@ function Proposal({ proposal }) {
       <div className="data-container">
         <div className="data">
           <span className="title">Function To Call:</span>
-          <span className="value"> {proposal.calldatas[0].slice(0,10)}</span>
+          <span className="value"> {proposal.decodedCalldatas[0].functionName}</span>
         </div>
         <div className="data">
           <span className="title">Argument:</span>
-          <span className="value"> {parseInt(proposal.calldatas[0].slice(10), 16)}</span>
+          <span className="value"> {proposal.decodedCalldatas[0].decodedData[0].toString(10)}</span>
         </div>
       </div>
       <div className="desc">{proposal.description}</div>
