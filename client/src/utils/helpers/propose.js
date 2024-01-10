@@ -44,36 +44,7 @@ export async function propose(args, functionToCall, proposalDescription) {
     const network = await provider.getNetwork();
     console.log(network);
 
-    const chainId = network.chainId?.toString();
-
-    const proposalObj = {
-      id: proposalId.toString(),
-      data: {
-        targets: [await box.getAddress()],
-        values: [0],
-        functionToCall,
-        args,
-        description: proposalDescription,
-      },
-    };
-
-    await storeProposal(chainId, proposalObj);
   } catch (error) {
     console.error("Error submitting proposal:", error);
   }
-}
-
-async function storeProposal(chainId, proposalObj) {
-  let proposalArray = localStorage.getItem(chainId);
-
-  if (!proposalArray) {
-    // If there is no existing array, initialize an empty array and save it
-    proposalArray = [];
-  } else {
-    // If there is an existing array, parse it from the stored string
-    proposalArray = JSON.parse(proposalArray);
-  }
-
-  proposalArray.push(proposalObj);
-  localStorage.setItem(chainId, JSON.stringify(proposalArray));
 }

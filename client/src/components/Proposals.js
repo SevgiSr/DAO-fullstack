@@ -2,13 +2,15 @@ import styled from "styled-components";
 import Proposal from "./Proposal";
 import { useContext, useEffect, useState } from "react";
 import { ConnectionContext } from "../context/ConnectionContext";
+import getEventLogs from "../utils/helpers/getEventLogs";
+
 
 function Proposals() {
   const [proposals, setProposals] = useState([]);
 
   useEffect(() => {
-    const handleStorageChange = () => {
-      setProposals(JSON.parse(localStorage.getItem("11155111")) || []);
+    const handleStorageChange = async () => {
+      setProposals(await getEventLogs().catch(console.error) || []);
     };
 
     handleStorageChange();
@@ -20,10 +22,11 @@ function Proposals() {
     };
   }, []);
 
+  console.log(proposals)
   return (
     <Styled>
       {proposals?.map((p) => {
-        return <Proposal key={p.id} proposal={p} />;
+        return <Proposal key={p.proposalId} proposal={p} />;
       })}
     </Styled>
   );

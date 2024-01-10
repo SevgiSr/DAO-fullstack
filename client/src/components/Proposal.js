@@ -17,7 +17,7 @@ function Proposal({ proposal }) {
 
   const handleClick = async (voteWay) => {
     setIsOpen(false);
-    await voteProposal(proposal.id, voteWay, reason);
+    await voteProposal(proposal.proposalId, voteWay, reason);
   };
 
   // MIN_DELAY AFTER QUEUE
@@ -27,7 +27,7 @@ function Proposal({ proposal }) {
     let interval;
 
     const execute = async () => {
-      await executeProposal(proposal.id);
+      await executeProposal(proposal.proposalId);
     };
 
     if (proposalExecutionTime) {
@@ -52,7 +52,7 @@ function Proposal({ proposal }) {
   // fetch proposal's state
   useEffect(() => {
     const fetchState = async () => {
-      const state = await getProposalState(proposal.id);
+      const state = await getProposalState(proposal.proposalId);
       setProposalState(convertState(state));
     };
     fetchState();
@@ -66,7 +66,7 @@ function Proposal({ proposal }) {
     <Styled>
       <header>
         <div className="proposal-id">
-          Proposal: {proposal.id.slice(0, 20)}...
+          Proposal: {proposal.proposalId?.slice(0, 20)}...
         </div>
         <div className="proposal-state">{proposalState}</div>
         <div className="seconds">{secondsUntilExecution}</div>
@@ -74,14 +74,14 @@ function Proposal({ proposal }) {
       <div className="data-container">
         <div className="data">
           <span className="title">Function To Call:</span>
-          <span className="value"> {proposal.data.functionToCall}</span>
+          <span className="value"> {proposal.calldatas[0].slice(0,10)}</span>
         </div>
         <div className="data">
           <span className="title">Argument:</span>
-          <span className="value"> {proposal.data.args}</span>
+          <span className="value"> {parseInt(proposal.calldatas[0].slice(10), 16)}</span>
         </div>
       </div>
-      <div className="desc">{proposal.data.description}</div>
+      <div className="desc">{proposal.description}</div>
       <div className="buttons">
         <button className="btn vote-btn" onClick={() => setIsOpen(true)}>
           Vote
@@ -91,7 +91,7 @@ function Proposal({ proposal }) {
             type="button"
             className="btn btn-main"
             onClick={() => {
-              queueProposal(proposal.id);
+              queueProposal(proposal.proposalId);
               setProposalExecutionTime(Date.now() + MIN_DELAY * 1000); // Convert MIN_DELAY to milliseconds
             }}
           >
@@ -102,7 +102,7 @@ function Proposal({ proposal }) {
             className="btn"
             onClick={() => {
               setProposalExecutionTime(null);
-              executeProposal(proposal.id);
+              executeProposal(proposal.proposalId);
             }}
           >
             Execute
@@ -116,7 +116,7 @@ function Proposal({ proposal }) {
           <div className="vote-modal-content">
             <header>
               <div className="proposal-id">
-                Proposal: {proposal.id.slice(0, 20)}...
+                Proposal: {proposal.proposalId?.slice(0, 20)}...
               </div>
               <div className="proposal-state">{proposalState}</div>
             </header>
