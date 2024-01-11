@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { propose } from "../utils/helpers/propose";
 import getContract from "../utils/helpers/getContract";
 import boxContract from "../utils/contracts/Box.json";
+import biggerBoxContract from "../utils/contracts/BiggerBox.json";
 import { vote } from "../utils/helpers/vote.js";
 import GovernorContract from "../utils/contracts/GovernorContract.json";
 import { getProposalData } from "../utils/helpers/getProposalData.js";
@@ -9,15 +10,10 @@ import { getProposalData } from "../utils/helpers/getProposalData.js";
 export const ProposalContext = React.createContext();
 
 export const ProposalProvider = ({ children }) => {
-  const sendProposal = async (value, funcToCall, desc) => {
+  const sendProposal = async (rawCalldatas, desc) => {
     console.log("proposing");
     try {
-      Number(value);
-    } catch (error) {
-      console.log("Input is not a number");
-    }
-    try {
-      await propose([value], funcToCall, desc);
+      await propose(rawCalldatas, desc);
       window.dispatchEvent(new CustomEvent("localStorageChange"));
       console.log("proposed!");
     } catch (error) {
@@ -87,16 +83,31 @@ export const ProposalProvider = ({ children }) => {
     }
   };
 
-  const readValue = async () => {
+  const readIntValue = async () => {
     try {
       // Assuming getContract function correctly initializes the contract
-      const box = await getContract(boxContract);
+      const biggerBox = await getContract(biggerBoxContract);
 
       // Call the view function. No need for a provider or transaction here.
-      const value = await box.retrieve();
+      const value = await biggerBox.retrieve_int();
 
       console.log(value);
       return Number(value);
+    } catch (error) {
+      console.error("Error retrieving value:", error);
+    }
+  };
+
+  const readStrValue = async () => {
+    try {
+      // Assuming getContract function correctly initializes the contract
+      const biggerBox = await getContract(biggerBoxContract);
+
+      // Call the view function. No need for a provider or transaction here.
+      const value = await biggerBox.retrieve_str();
+
+      console.log(value);
+      return value;
     } catch (error) {
       console.error("Error retrieving value:", error);
     }
@@ -107,7 +118,8 @@ export const ProposalProvider = ({ children }) => {
       value={{
         sendProposal,
         voteProposal,
-        readValue,
+        readIntValue,
+        readStrValue,
         getProposalState,
         queueProposal,
         executeProposal,

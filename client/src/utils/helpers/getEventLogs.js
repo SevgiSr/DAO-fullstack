@@ -7,11 +7,11 @@ const provider = new JsonRpcProvider('https://ethereum-sepolia.publicnode.com');
 const govAddress = '0x61e9cdB27B43B01528F916f03298956Bb1F7BD1F';
 const boxAddress = '0xa35503e5f050F4Fa6B3EE5e74619EaCf2614F96B';
 const govAbi = require('./gov_abi.json'); // Assuming gov_abi.json is in the same directory
-const boxAbi = require('./box_abi.json');
+const biggerBoxAbi = require('./biggerbox_abi.json');
 
 // Create a contract object
 const govContract = new ethers.Contract(govAddress, govAbi, provider);
-const boxContract = new ethers.Contract(boxAddress, boxAbi, provider);
+const boxContract = new ethers.Contract(boxAddress, biggerBoxAbi, provider);
 
 
 // Event signature
@@ -83,7 +83,7 @@ async function getEventLogs() {
                         }
                     });
                 }
-
+                console.log({...event, args: namedArgs});
                 eventList.push({...event, args: namedArgs}['args']);
                 // console.log(eventList[eventList.length - 1])
             }
