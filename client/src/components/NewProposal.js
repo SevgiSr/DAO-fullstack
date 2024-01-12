@@ -65,19 +65,20 @@ function NewProposal() {
         <div className="propose">
         <form onSubmit={handleSubmit}>
           {/* Checkbox for Store Int */}
-          <label>
+          <div className="checkbox-container">
+            <label className="checkbox-label" htmlFor="storeIntCheckbox">
+              store_int
+            </label>
             <input
+              id="storeIntCheckbox"
               type="checkbox"
               checked={storeIntChecked}
               onChange={() => setStoreIntChecked(!storeIntChecked)}
             />
-            Store Int
-          </label>
-
+          </div>
           {/* Input for Int value, shown only if storeIntChecked is true */}
           {storeIntChecked && (
             <label htmlFor="value">
-              Store number:
               <input
                 id="intValue"
                 type="text"
@@ -85,24 +86,27 @@ function NewProposal() {
                 onChange={(e) => setIntValue(e.target.value)}
                 className="input"
                 spellCheck="false"
+                placeholder="Type: uint256"
               />
             </label>
           )}
 
           {/* Checkbox for Store Str */}
-          <label>
+          <div className="checkbox-container">
+            <label className="checkbox-label" htmlFor="storeStrCheckbox">
+              store_str
+            </label>
             <input
+              id="storeStrCheckbox"
               type="checkbox"
               checked={storeStrChecked}
               onChange={() => setStoreStrChecked(!storeStrChecked)}
             />
-            Store Str
-          </label>
+          </div>
 
           {/* Input for Str value, shown only if storeStrChecked is true */}
           {storeStrChecked && (
             <label htmlFor="strValue">
-              Store string:
               <input
                 id="strValue"
                 type="text"
@@ -110,11 +114,12 @@ function NewProposal() {
                 onChange={(e) => setStrValue(e.target.value)}
                 className="input"
                 spellCheck="false"
+                placeholder="Type: string"
               />
             </label>
           )}
 
-            <label htmlFor="desc">
+            <label className="description-label" htmlFor="desc">
               Description:
               <textarea
                 id="desc"
@@ -124,6 +129,7 @@ function NewProposal() {
                 onChange={(e) => setDesc(e.target.value)}
                 className="input"
                 spellCheck="false"
+                placeholder="Describe your proposal."
               />
             </label>
             {error && <div className="error-message">{error}</div>}
@@ -166,15 +172,24 @@ const Styled = styled.div`
         label {
           display: flex;
           flex-direction: column;
-          margin-bottom: 1em;
           color: var(--font3);
           font-weight: 600;
           input,
           textarea {
-            margin-top: 0.5em;
+            margin-bottom: 1em;
+
           }
         }
-
+        .checkbox-container {
+          display: flex;
+          flex-direction: row-reverse;
+          justify-content: start;
+          align-items: center;
+          margin-bottom: 1em;
+        }
+        .checkbox-label {
+          padding-left: 1em;
+        }
         .functions {
           margin-bottom: 1em;
 
@@ -188,6 +203,12 @@ const Styled = styled.div`
             }
           }
         }
+      }
+    }
+
+    .description-label {
+      textarea {
+        margin-top: 1em;
       }
     }
 
@@ -211,5 +232,7 @@ const Styled = styled.div`
     margin-bottom: 3em;
   }
 `;
+
+
 
 export default NewProposal;
