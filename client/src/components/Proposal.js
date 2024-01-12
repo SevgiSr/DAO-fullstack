@@ -62,25 +62,40 @@ function Proposal({ proposal }) {
     return () => clearInterval(interval);
   }, []);
 
+
   return (
     <Styled>
       <header>
-        <div className="proposal-id">
-          Proposal: {proposal.proposalId?.slice(0, 20)}...
-        </div>
+        <div className="proposal-id">Proposal: {proposal.proposalId.slice(0,20)}...</div>
         <div className="proposal-state">{proposalState}</div>
         <div className="seconds">{secondsUntilExecution}</div>
       </header>
+
       <div className="data-container">
         <div className="data">
-          <span className="title">Function To Call:</span>
-          <span className="value"> {proposal.decodedCalldatas[0].functionName}</span>
+          <span className="title">Proposer:</span>
+          <span className="value">{proposal.proposer}</span>
         </div>
-        <div className="data">
-          <span className="title">Argument:</span>
-          <span className="value"> {proposal.decodedCalldatas[0].decodedData[0].toString(10)}</span>
-        </div>
+        {proposal.targets.map((target, index) => (
+          <div key={index} className="data">
+            <div className="target">
+              <span className="title">Target Address:</span>
+              <span className="value">{target}</span>
+            </div>
+            <div className="function-call">
+              <span className="title">Function To Call:</span>
+              <span className="value">{proposal.decodedCalldatas[index]?.functionName}</span>
+            </div>
+            <div className="arguments">
+              <span className="title">Arguments:</span>
+              <span className="value">
+                {proposal.decodedCalldatas[index]?.decodedData.join(', ')}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
+
       <div className="desc">{proposal.description}</div>
       <div className="buttons">
         <button className="btn vote-btn" onClick={() => setIsOpen(true)}>
@@ -186,26 +201,39 @@ const Styled = styled.div`
       margin-left: 1em;
     }
   }
+
   .data-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
     margin-bottom: 1em;
+
     .data {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1em;
+      margin-bottom: 1em;
       color: var(--font2);
+
       .title {
         font-size: 16px;
         font-weight: 600;
+        display: block; /* Makes titles appear on their own line */
       }
+
       .value {
         color: var(--main-text);
+        margin-left: 0.5em; /* Spacing for values */
+      }
+
+      .target, .function-call, .arguments {
+        margin-bottom: 0.5em;
       }
     }
   }
+
   .desc {
     color: var(--font3);
     margin-bottom: 1.5em;
   }
+
   .buttons {
     display: flex;
     align-items: center;
@@ -241,10 +269,12 @@ const Styled = styled.div`
   @media screen and (max-width: 500px) {
     font-size: 14px;
     padding: 1.2em 2.4em;
+
     header {
       flex-direction: column;
       align-items: start;
       font-size: 16px;
+
       .proposal-state {
         margin-top: 0.3em;
       }
@@ -257,13 +287,22 @@ const Styled = styled.div`
         }
       }
     }
+
     .buttons {
+      flex-direction: column;
+      align-items: stretch;
+
       button {
         font-size: 13px;
+        margin-top: 0.5em; /* Added space for smaller screens */
       }
+
       .queue-and-execute {
+        flex-direction: column;
+
         button {
-          margin-left: 0.3em;
+          margin-left: 0;
+          margin-top: 0.5em; /* Added space for smaller screens */
         }
       }
     }

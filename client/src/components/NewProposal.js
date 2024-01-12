@@ -6,29 +6,44 @@ function NewProposal() {
   const { sendProposal, readIntValue, readStrValue } = useContext(ProposalContext);
   const [intValue, setIntValue] = useState("");
   const [strValue, setStrValue] = useState("");
-  // const [rawCalldatas, setRawCalldatas] = useState("");
   const [desc, setDesc] = useState("");
   const [storeIntChecked, setStoreIntChecked] = useState(false);
   const [storeStrChecked, setStoreStrChecked] = useState(false);
   const [retrievedIntValue, setRetrievedIntValue] = useState("");
   const [retrievedStrValue, setRetrievedStrValue] = useState("");
-
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
     let rawCalldatas = {};
+    setError(""); // Reset error message
+
     if (storeIntChecked) {
-      try {
-        rawCalldatas.store_int = [Number(intValue)];
-      } catch (error) {
-        console.log("Input is not a number");
+      if (isNaN(Number(intValue))) {
+        setError("Input is not a number");
+        return;
       }
+      rawCalldatas.store_int = [Number(intValue)];
     }
     if (storeStrChecked) {
       rawCalldatas.store_str = [strValue];
     }
+
+    // Check if at least one function is selected
+    if (!storeIntChecked && !storeStrChecked) {
+      setError("Please select at least one function to store");
+      return;
+    }
+
     console.log(rawCalldatas);
     sendProposal(rawCalldatas, desc);
+
+    // Reset form
+    setIntValue("");
+    setStrValue("");
+    setDesc("");
+    setStoreIntChecked(false);
+    setStoreStrChecked(false);
   };
 
   const handleReadIntClick = async () => {
@@ -111,6 +126,7 @@ function NewProposal() {
                 spellCheck="false"
               />
             </label>
+            {error && <div className="error-message">{error}</div>}
             <button type="submit" className="btn btn-main propose-btn">
               Propose
             </button>
