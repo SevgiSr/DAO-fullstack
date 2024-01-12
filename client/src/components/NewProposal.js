@@ -3,21 +3,57 @@ import styled from "styled-components";
 import { ProposalContext } from "../context/ProposalContext";
 
 function NewProposal() {
-  const { sendProposal, readValue } = useContext(ProposalContext);
-  const [value, setValue] = useState("");
+  const { sendProposal, readIntValue, readStrValue } = useContext(ProposalContext);
+  const [intValue, setIntValue] = useState("");
+  const [strValue, setStrValue] = useState("");
   const [desc, setDesc] = useState("");
-  const [funcToCall, setFuncToCall] = useState("store");
-
-  const [retrievedValue, setRetrievedValue] = useState("");
+  const [storeIntChecked, setStoreIntChecked] = useState(false);
+  const [storeStrChecked, setStoreStrChecked] = useState(false);
+  const [retrievedIntValue, setRetrievedIntValue] = useState("");
+  const [retrievedStrValue, setRetrievedStrValue] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    sendProposal(value, funcToCall, desc);
+    let rawCalldatas = {};
+    setError(""); // Reset error message
+
+    if (storeIntChecked) {
+      if (isNaN(Number(intValue))) {
+        setError("Input is not a number");
+        return;
+      }
+      rawCalldatas.store_int = [Number(intValue)];
+    }
+    if (storeStrChecked) {
+      rawCalldatas.store_str = [strValue];
+    }
+
+    // Check if at least one function is selected
+    if (!storeIntChecked && !storeStrChecked) {
+      setError("Please select at least one function to store");
+      return;
+    }
+
+    console.log(rawCalldatas);
+    sendProposal(rawCalldatas, desc);
+
+    // Reset form
+    setIntValue("");
+    setStrValue("");
+    setDesc("");
+    setStoreIntChecked(false);
+    setStoreStrChecked(false);
   };
 
-  const handleReadClick = async () => {
-    const value = await readValue();
-    setRetrievedValue(value);
+  const handleReadIntClick = async () => {
+    const value = await readIntValue();
+    setRetrievedIntValue(value);
+  };
+
+  const handleReadStrClick = async () => {
+    const value = await readStrValue();
+    setRetrievedStrValue(value);
   };
 
   return (
@@ -27,30 +63,56 @@ function NewProposal() {
       </header>
       <div className="actions">
         <div className="propose">
-          <form onSubmit={handleSubmit}>
-            <div className="functions">
-              <label htmlFor="store">
-                Store
-                <input
-                  id="store"
-                  type="radio"
-                  value="store"
-                  checked={funcToCall === "store"}
-                  onChange={(e) => setFuncToCall(e.target.value)}
-                />
-              </label>
-            </div>
+        <form onSubmit={handleSubmit}>
+          {/* Checkbox for Store Int */}
+          <label>
+            <input
+              type="checkbox"
+              checked={storeIntChecked}
+              onChange={() => setStoreIntChecked(!storeIntChecked)}
+            />
+            Store Int
+          </label>
+
+          {/* Input for Int value, shown only if storeIntChecked is true */}
+          {storeIntChecked && (
             <label htmlFor="value">
               Store number:
               <input
-                id="value"
+                id="intValue"
                 type="text"
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
+                value={intValue}
+                onChange={(e) => setIntValue(e.target.value)}
                 className="input"
                 spellCheck="false"
               />
             </label>
+          )}
+
+          {/* Checkbox for Store Str */}
+          <label>
+            <input
+              type="checkbox"
+              checked={storeStrChecked}
+              onChange={() => setStoreStrChecked(!storeStrChecked)}
+            />
+            Store Str
+          </label>
+
+          {/* Input for Str value, shown only if storeStrChecked is true */}
+          {storeStrChecked && (
+            <label htmlFor="strValue">
+              Store string:
+              <input
+                id="strValue"
+                type="text"
+                value={strValue}
+                onChange={(e) => setStrValue(e.target.value)}
+                className="input"
+                spellCheck="false"
+              />
+            </label>
+          )}
 
             <label htmlFor="desc">
               Description:
@@ -64,6 +126,7 @@ function NewProposal() {
                 spellCheck="false"
               />
             </label>
+            {error && <div className="error-message">{error}</div>}
             <button type="submit" className="btn btn-main propose-btn">
               Propose
             </button>
@@ -71,11 +134,16 @@ function NewProposal() {
         </div>
 
         <div className="retrieve">
-          <button onClick={handleReadClick} className="btn read-btn">
-            Read Value
+          <button onClick={handleReadIntClick} className="btn read-btn">
+            Read Int
           </button>
-
-          <div className="value">{retrievedValue}</div>
+          <div className="value">{retrievedIntValue}</div>
+        </div>
+        <div className="retrieve">
+          <button onClick={handleReadStrClick} className="btn read-btn">
+            Read Str
+          </button>
+          <div className="value">{retrievedStrValue}</div>
         </div>
       </div>
     </Styled>

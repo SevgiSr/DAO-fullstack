@@ -5,14 +5,21 @@ const provider = new JsonRpcProvider('https://ethereum-sepolia.publicnode.com');
 
 // Contract address and ABI
 const govAddress = '0x61e9cdB27B43B01528F916f03298956Bb1F7BD1F';
+const biggerBoxAddress = '0xa73AD35f210D1F97b9691E6163De4986bf902A8b';
 const boxAddress = '0xa35503e5f050F4Fa6B3EE5e74619EaCf2614F96B';
 const govAbi = require('./gov_abi.json'); // Assuming gov_abi.json is in the same directory
+const biggerBoxAbi = require('./biggerbox_abi.json');
 const boxAbi = require('./box_abi.json');
 
 // Create a contract object
 const govContract = new ethers.Contract(govAddress, govAbi, provider);
+const biggerBoxContract = new ethers.Contract(biggerBoxAddress, biggerBoxAbi, provider);
 const boxContract = new ethers.Contract(boxAddress, boxAbi, provider);
 
+const contracts = {
+    '0xa73AD35f210D1F97b9691E6163De4986bf902A8b': biggerBoxContract,
+    '0xa35503e5f050F4Fa6B3EE5e74619EaCf2614F96B': boxContract
+};
 
 // Event signature
 const event = 'ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)';
@@ -63,14 +70,21 @@ async function getEventLogs() {
 
                 // Check if calldatas exists and decode each item
                 if (namedArgs.calldatas) {
-                    namedArgs.decodedCalldatas = namedArgs.calldatas.map(calldata => {
+                    namedArgs.decodedCalldatas = namedArgs.calldatas.map((calldata, index) => {
                         try {
+
+                            const target = namedArgs.targets[index];
+                         
+                            if (!contracts[target]) {
+                                throw new Error(`Contract not found for address: ${target}`);
+                            }
+
                             // Extract the function signature hash (first 4 bytes of calldata)
                             const signatureHash = calldata.slice(0, 10); // Includes '0x' prefix
-                            const functionFragment = boxContract.interface.getFunction(signatureHash);
+                            const functionFragment = contracts[target].interface.getFunction(signatureHash);
 
                             // Decode the calldata
-                            const decodedData = boxContract.interface.decodeFunctionData(functionFragment, calldata);
+                            const decodedData = contracts[target].interface.decodeFunctionData(functionFragment, calldata);
 
                             // Return both the function name and the decoded data
                             return {
@@ -83,7 +97,6 @@ async function getEventLogs() {
                         }
                     });
                 }
-
                 eventList.push({...event, args: namedArgs}['args']);
                 // console.log(eventList[eventList.length - 1])
             }
