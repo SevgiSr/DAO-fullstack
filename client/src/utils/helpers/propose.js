@@ -1,6 +1,7 @@
 import getContract from "./getContract";
 
 // import boxContract from "../contracts/Box.json";
+import boxContract from "../contracts/Box.json";
 import biggerBoxContract from "../contracts/BiggerBox.json";
 import GovernorContract from "../contracts/GovernorContract.json";
 import { ethers } from "ethers";
@@ -8,27 +9,32 @@ import { ethers } from "ethers";
 export const proposals = {};
 const { ethereum } = window;
 
-export async function propose(rawCalldatas, proposalDescription) {
+const box = await getContract(boxContract);
+const biggerBox = await getContract(biggerBoxContract);
+const governor = await getContract(GovernorContract);
+
+const contracts = {
+  [boxContract.address]: box,
+  [biggerBoxContract.address]: biggerBox
+};
+
+export async function propose(rawCalldatas, targets, proposalDescription) {
   const provider = new ethers.BrowserProvider(ethereum);
 
-  const biggerBox = await getContract(biggerBoxContract);
-  const governor = await getContract(GovernorContract);
   let encodedFunctionCalls = [];
-  for (const [functionName, arg] of Object.entries(rawCalldatas)) {
-    console.log(functionName, arg)
-    const encodedFunctionCall = biggerBox.interface.encodeFunctionData(
+  Object.entries(rawCalldatas).forEach(([functionName, args], index) => {
+    let arglist = args.arguments.map(obj => obj.value);
+    const encodedFunctionCall = contracts[targets[index]].interface.encodeFunctionData(
       functionName,
-      arg
+      arglist
     );
     encodedFunctionCalls.push(encodedFunctionCall);
-  }
+  });
 
   console.log(
     `Proposing ${rawCalldatas} on ${await biggerBox.getAddress()}`
   );
   console.log(`Proposal Description:\n  ${proposalDescription}`);
-  let targets = [await biggerBox.getAddress()];
-  targets = Array(encodedFunctionCalls.length).fill(null).map(() => targets[0]);
   let values = [0];
   console.log(values);
   values = Array(encodedFunctionCalls.length).fill(null).map(() => values[0]);

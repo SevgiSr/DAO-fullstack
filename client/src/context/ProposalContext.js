@@ -10,10 +10,10 @@ import { getProposalData } from "../utils/helpers/getProposalData.js";
 export const ProposalContext = React.createContext();
 
 export const ProposalProvider = ({ children }) => {
-  const sendProposal = async (rawCalldatas, desc) => {
+  const sendProposal = async (rawCalldatas, targets, desc) => {
     console.log("proposing");
     try {
-      await propose(rawCalldatas, desc);
+      await propose(rawCalldatas, targets, desc);
       window.dispatchEvent(new CustomEvent("localStorageChange"));
       console.log("proposed!");
     } catch (error) {

@@ -1,59 +1,107 @@
-import { useContext, useState } from "react";
+import { Fragment, useContext, useState } from "react";
 import styled from "styled-components";
 import { ProposalContext } from "../context/ProposalContext";
+const biggerBoxAbi = require('../utils/helpers/biggerbox_abi.json');
+const boxAbi = require('../utils/helpers/box_abi.json');
 
 function NewProposal() {
-  const { sendProposal, readIntValue, readStrValue } = useContext(ProposalContext);
-  const [intValue, setIntValue] = useState("");
-  const [strValue, setStrValue] = useState("");
+  const { sendProposal } = useContext(ProposalContext);
   const [desc, setDesc] = useState("");
-  const [storeIntChecked, setStoreIntChecked] = useState(false);
-  const [storeStrChecked, setStoreStrChecked] = useState(false);
-  const [retrievedIntValue, setRetrievedIntValue] = useState("");
-  const [retrievedStrValue, setRetrievedStrValue] = useState("");
-  const [error, setError] = useState("");
+  const [selectedContracts, setSelectedContracts] = useState({}); // Holds user-selected contracts and their functions
+
+  const contracts = {
+    '0xa73AD35f210D1F97b9691E6163De4986bf902A8b': ['BiggerBox',biggerBoxAbi],
+    '0xa35503e5f050F4Fa6B3EE5e74619EaCf2614F96B': ['Box',boxAbi]
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     let rawCalldatas = {};
-    setError(""); // Reset error message
+    let targets = [];
 
-    if (storeIntChecked) {
-      if (isNaN(Number(intValue))) {
-        setError("Input is not a number");
-        return;
-      }
-      rawCalldatas.store_int = [Number(intValue)];
-    }
-    if (storeStrChecked) {
-      rawCalldatas.store_str = [strValue];
-    }
+    // Iterate over selectedContracts and prepare data
+    Object.entries(selectedContracts).forEach(([contractAddress, contractData]) => {
+      Object.entries(contractData.functions).forEach(([functionName, functionData]) => {
+        targets.push(contractAddress);
+        rawCalldatas[functionName] = functionData;
 
-    // Check if at least one function is selected
-    if (!storeIntChecked && !storeStrChecked) {
-      setError("Please select at least one function to store");
-      return;
-    }
+      });
+    });
+    // console.log(targets);
+    // console.log(rawCalldatas);
 
-    console.log(rawCalldatas);
-    sendProposal(rawCalldatas, desc);
-
+    sendProposal(rawCalldatas, targets, desc);
     // Reset form
-    setIntValue("");
-    setStrValue("");
-    setDesc("");
-    setStoreIntChecked(false);
-    setStoreStrChecked(false);
   };
 
-  const handleReadIntClick = async () => {
-    const value = await readIntValue();
-    setRetrievedIntValue(value);
+  const handleContractCheck = (address, checked) => {
+    setSelectedContracts(prev => {
+      if (checked) {
+        return { ...prev, [address]: { name: contracts[address][0], abi: contracts[address][1], functions: {} } };
+      } else {
+        const newSelected = { ...prev };
+        delete newSelected[address];
+        return newSelected;
+      }
+    });
   };
 
-  const handleReadStrClick = async () => {
-    const value = await readStrValue();
-    setRetrievedStrValue(value);
+  const handleFunctionCheck = (contractAddress, functionName, checked, functionInputs) => {
+    setSelectedContracts(prev => {
+      const newSelected = { ...prev };
+      if (checked) {
+        newSelected[contractAddress].functions[functionName] = {
+          arguments: functionInputs.map(input => ({ type: input.type, value: '' }))
+        };
+      } else {
+        delete newSelected[contractAddress].functions[functionName];
+      }
+      return newSelected;
+    });
+  };
+
+
+  const handleArgumentChange = (contractAddress, functionName, argIndex, value) => {
+    setSelectedContracts(prev => {
+      const newSelected = { ...prev };
+      newSelected[contractAddress].functions[functionName].arguments[argIndex].value = value;
+      return newSelected;
+    });
+  };
+
+  const renderFunctionArguments = (contractAddress, functionName) => {
+    const functionData = selectedContracts[contractAddress]?.functions[functionName];
+    if (!functionData) return null;
+
+    return functionData.arguments.map((arg, index) => (
+      <input
+        key={index}
+        type="text"
+        className="input"
+        value={arg.value}
+        onChange={(e) => handleArgumentChange(contractAddress, functionName, index, e.target.value)}
+        placeholder={`Type: ${arg.type}`}
+      />
+    ));
+  };
+
+  const renderFunctionsForContract = (contractAddress) => {
+    const contract = contracts[contractAddress];
+    return contract[1].filter(item => item.type === 'function' && item.stateMutability !== 'view').map(func => (
+      <Fragment key={func.name}>
+      <div key={func.name} className="checkbox-container">
+        <label>
+          {func.name}
+        </label>
+        <input
+          type="checkbox"
+          checked={!!selectedContracts[contractAddress]?.functions[func.name]}
+          onChange={(e) => handleFunctionCheck(contractAddress, func.name, e.target.checked, func.inputs)}
+        />
+      </div>
+      {renderFunctionArguments(contractAddress, func.name)}
+      </Fragment>
+    ));
   };
 
   return (
@@ -62,95 +110,46 @@ function NewProposal() {
         <h2>New Proposal</h2>
       </header>
       <div className="actions">
-        <div className="propose">
-        <form onSubmit={handleSubmit}>
-          {/* Checkbox for Store Int */}
-          <div className="checkbox-container">
-            <label className="checkbox-label" htmlFor="storeIntCheckbox">
-              store_int
+      <div className="propose">
+      <form onSubmit={handleSubmit}>
+        <div className="contracts">
+        {Object.keys(contracts).map(address => (
+          <div key={address} className="checkbox-container">
+            <label>
+              {contracts[address][0]}: {address}
             </label>
-            <input
-              id="storeIntCheckbox"
-              type="checkbox"
-              checked={storeIntChecked}
-              onChange={() => setStoreIntChecked(!storeIntChecked)}
-            />
-          </div>
-          {/* Input for Int value, shown only if storeIntChecked is true */}
-          {storeIntChecked && (
-            <label htmlFor="value">
               <input
-                id="intValue"
-                type="text"
-                value={intValue}
-                onChange={(e) => setIntValue(e.target.value)}
-                className="input"
-                spellCheck="false"
-                placeholder="Type: uint256"
+                type="checkbox"
+                checked={!!selectedContracts[address]}
+                onChange={(e) => handleContractCheck(address, e.target.checked)}
               />
-            </label>
-          )}
-
-          {/* Checkbox for Store Str */}
-          <div className="checkbox-container">
-            <label className="checkbox-label" htmlFor="storeStrCheckbox">
-              store_str
-            </label>
-            <input
-              id="storeStrCheckbox"
-              type="checkbox"
-              checked={storeStrChecked}
-              onChange={() => setStoreStrChecked(!storeStrChecked)}
-            />
           </div>
-
-          {/* Input for Str value, shown only if storeStrChecked is true */}
-          {storeStrChecked && (
-            <label htmlFor="strValue">
-              <input
-                id="strValue"
-                type="text"
-                value={strValue}
-                onChange={(e) => setStrValue(e.target.value)}
-                className="input"
-                spellCheck="false"
-                placeholder="Type: string"
-              />
-            </label>
-          )}
-
-            <label className="description-label" htmlFor="desc">
-              Description:
-              <textarea
-                id="desc"
-                cols="30"
-                rows="10"
-                value={desc}
-                onChange={(e) => setDesc(e.target.value)}
-                className="input"
-                spellCheck="false"
-                placeholder="Describe your proposal."
-              />
-            </label>
-            {error && <div className="error-message">{error}</div>}
-            <button type="submit" className="btn btn-main propose-btn">
-              Propose
-            </button>
-          </form>
+        ))}
         </div>
-
-        <div className="retrieve">
-          <button onClick={handleReadIntClick} className="btn read-btn">
-            Read Int
-          </button>
-          <div className="value">{retrievedIntValue}</div>
-        </div>
-        <div className="retrieve">
-          <button onClick={handleReadStrClick} className="btn read-btn">
-            Read Str
-          </button>
-          <div className="value">{retrievedStrValue}</div>
-        </div>
+        {Object.keys(selectedContracts).map(contractAddress => (
+          <div className="contract-functions" key={contractAddress}>
+            <h3>{selectedContracts[contractAddress].name}</h3>
+            {renderFunctionsForContract(contractAddress)}
+          </div>
+        ))}
+        <label className="description" htmlFor="desc">
+          Description:
+          <textarea
+            id="desc"
+            cols="30"
+            rows="10"
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            className="input"
+            spellCheck="false"
+            placeholder="Describe your proposal."
+          />
+        </label>
+        <button type="submit" className="btn btn-main propose-btn">
+          Propose
+        </button>
+      </form>
+      </div>
       </div>
     </Styled>
   );
@@ -206,7 +205,22 @@ const Styled = styled.div`
       }
     }
 
-    .description-label {
+    .contracts {
+      margin-bottom: 1em;
+    }
+
+    .contract-functions {
+      color: var(--font2);
+      margin-bottom: 1em;
+      h3 {
+        margin-bottom: 0.5em;
+      }
+      .input {
+        margin-bottom: 1em;
+      }
+    }
+
+    .description {
       textarea {
         margin-top: 1em;
       }
@@ -232,6 +246,7 @@ const Styled = styled.div`
     margin-bottom: 3em;
   }
 `;
+
 
 
 
